@@ -1,6 +1,7 @@
 // server.js
 
 require('dotenv').config();
+const fetch = require('node-fetch');
 
 const express = require('express');
 const cors = require('cors');
@@ -434,6 +435,57 @@ app.post('/search', async (req, res) => {
   } catch (error) {
     console.error(`Error in /search: ${error}`);
     res.status(500).json({ error: 'An error occurred.' });
+  }
+});
+
+// CAPTCHA Verification Endpoint
+app.post('/verify-recaptcha', async (req, res) => {
+  try {
+    const { token } = req.body;
+
+    if (!token) {
+      console.error('Token is missing in request body.');
+      return res.status(400).json({ success: false, message: 'Token is missing' });
+    }
+
+    const secretKey = process.env.RECAPTCHA_SECRET_KEY;
+
+    if (!secretKey) {
+      console.error('RECAPTCHA_SECRET_KEY is not defined in environment variables.');
+      return res
+        .status(500)
+        .json({ success: false, message: 'Server error: Secret key not configured.' });
+    }
+
+    const params = new URLSearchParams();
+    params.append('secret', secretKey);
+    params.append('response', token);
+
+    // Make a request to the reCAPTCHA verification API
+    const verificationResponse = await fetch(
+      'https://www.google.com/recaptcha/api/siteverify',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: params.toString(),
+      }
+    );
+
+    const data = await verificationResponse.json();
+
+    if (data.success) {
+      // CAPTCHA verified successfully
+      res.status(200).json({ success: true });
+    } else {
+      // Verification failed
+      console.error('reCAPTCHA verification failed:', data['error-codes']);
+      res.status(400).json({ success: false, errors: data['error-codes'] });
+    }
+  } catch (error) {
+    console.error('Error in /verify-recaptcha:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 });
 

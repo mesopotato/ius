@@ -199,7 +199,7 @@ export default function Component() {
   const handleCaptchaVerify = async (token: string | null) => {
     if (token) {
       try {
-        const response = await fetch("/api/verify-recaptcha", {
+        const response = await fetch("/verify-recaptcha", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
