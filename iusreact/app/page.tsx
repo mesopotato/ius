@@ -439,9 +439,18 @@ export default function Component() {
                           >
                             <div className="space-y-4 mt-4">
                               {[
-                                "Can I get a Pitbull in Martigny? user history table required / auth etc",
-                                "Are there any cantons in Switzerland, where Pitbulls are not restricted? user history table required / auth etc",
-                                "Are there any upcoming changes to breed restriction in Switzerland? user history table required / auth etc",
+                                "TODO user history table required / authentication etc",
+                                "TODO session handling for API ",
+                                "TODO user input preprocessing",
+                                "TODO websockets (streamen) wegen warten (evtl antwort auf atikel konzentrieren) danach präzedenzfälle preprocessieren und streamen)",
+                                "TODO a little animation beim waiting would be nice",
+                                "TODO prompt engineering for citations",
+                                "TODO prod vs dev switches for endpoints etc.",
+                                "TODO db security / fixing of other no-gos",
+                                "TODO load balancing / scaling",
+                                "TODO firewall / ddos protection",
+                                "TODO SSH hardening / key management",
+                                "TODO CD (watchtower) / CI (github actions)",
                               ].map((question, index) => (
                                 <Card
                                   key={index}
