@@ -444,7 +444,7 @@ export default function Component() {
                                 "TODO user input preprocessing",
                                 "TODO websockets (streamen) wegen warten (evtl antwort auf atikel konzentrieren) danach präzedenzfälle preprocessieren und streamen)",
                                 "TODO a little animation beim waiting would be nice",
-                                "TODO prompt engineering for citations",
+                                "TODO prompt engineering for citations and markdown",
                                 "TODO prod vs dev switches for endpoints etc.",
                                 "TODO db security / fixing of other no-gos",
                                 "TODO load balancing / scaling",
