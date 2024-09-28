@@ -441,43 +441,20 @@ app.post('/search', async (req, res) => {
 
 // CAPTCHA Verification Endpoint
 app.post('/verify-recaptcha', async (req, res) => {
+  const { captchaValue } = req.body;
+
+  if (!captchaValue) {
+    return res.status(400).json({ success: false, message: 'Token is missing' });
+  }
+
   try {
-    const { token } = req.body;
+    const verificationURL = `https://www.google.com/recaptcha/api/siteverify?secret=${RECAPTCHA_SECRET_KEY}&response=${captchaValue}`;
 
-    if (!token) {
-      console.error('Token is missing in request body.');
-      return res.status(400).json({ success: false, message: 'Token is missing' });
-    }
-
-    const secretKey = process.env.RECAPTCHA_SECRET_KEY;
-
-    if (!secretKey) {
-      console.error('RECAPTCHA_SECRET_KEY is not defined in environment variables.');
-      return res
-        .status(500)
-        .json({ success: false, message: 'Server error: Secret key not configured.' });
-    }
-
-    const params = new URLSearchParams();
-    params.append('secret', secretKey);
-    params.append('response', token);
-
-    // Make a request to the reCAPTCHA verification API
-    const verificationResponse = await fetch(
-      'https://www.google.com/recaptcha/api/siteverify',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: params.toString(),
-      }
-    );
-
-    const data = await verificationResponse.json();
+    const { data } = await axios.post(verificationURL);
 
     if (data.success) {
       // CAPTCHA verified successfully
+      console.log('reCAPTCHA verification successful');
       res.status(200).json({ success: true });
     } else {
       // Verification failed
@@ -485,7 +462,7 @@ app.post('/verify-recaptcha', async (req, res) => {
       res.status(400).json({ success: false, errors: data['error-codes'] });
     }
   } catch (error) {
-    console.error('Error in /verify-recaptcha:', error);
+    console.error('Error verifying reCAPTCHA:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });

@@ -33,6 +33,7 @@ import {
 
 import React, { useState, useEffect, useRef } from "react";
 import ReCAPTCHA from "react-google-recaptcha";
+// inporting environment variables
 
 export default function Component() {
   interface Document {
@@ -195,10 +196,12 @@ export default function Component() {
   };
 
   const [isHuman, setIsHuman] = useState(false);
+  const recaptchaRef = useRef(null);
 
   const handleCaptchaVerify = async (token: string | null) => {
     if (token) {
       try {
+
         const response = await fetch("http://iuslex.cloud:3001/verify-recaptcha", {
           method: "POST",
           headers: {
@@ -231,8 +234,9 @@ export default function Component() {
               Please verify that you are a human
             </h2>
             <ReCAPTCHA
-              sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ""}
+              sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY  || ""}
               onChange={handleCaptchaVerify}
+              ref={recaptchaRef}
             />
           </div>
         </div>
