@@ -20,6 +20,10 @@ app.use((req, res, next) => {
   next();
 });
 */
+
+// from dotenv import RECAPTCHA_SECRET_KEY
+const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY;
+
 const OpenAI = require('openai');
 
 const openai = new OpenAI({
