@@ -441,9 +441,9 @@ app.post('/search', async (req, res) => {
 
 // CAPTCHA Verification Endpoint
 app.post('/verify-recaptcha', async (req, res) => {
-  const { captchaValue } = req.body;
+  const { token } = req.body;
 
-  if (!captchaValue) {
+  if (!token) {
     return res.status(400).json({ success: false, message: 'Token is missing' });
   }
 

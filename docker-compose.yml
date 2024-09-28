@@ -50,6 +50,11 @@ services:
       - db
     networks:
       - app-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.iusapi.rule=Host(`iusapi.cloud`)"
+      - "traefik.http.routers.iusapi.entrypoints=websecure"
+      - "traefik.http.routers.iusapi.tls.certresolver=myresolver"
 
   db:
     image: ankane/pgvector:latest  # Use the pgvector image instead of plain postgres
