@@ -452,7 +452,7 @@ app.post('/api/verify-recaptcha', async (req, res) => {
   }
 
   try {
-    const verificationURL = `https://www.google.com/recaptcha/api/siteverify?secret=${RECAPTCHA_SECRET_KEY}&response=${captchaValue}`;
+    const verificationURL = `https://www.google.com/recaptcha/api/siteverify?secret=${RECAPTCHA_SECRET_KEY}&response=${token}`;
 
     const { data } = await axios.post(verificationURL);
 
