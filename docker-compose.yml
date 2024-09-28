@@ -1,10 +1,26 @@
 services:
+  reverse-proxy:
+    image: traefik:v3.1
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "443:443"
+      - "8080:8080"
+    networks:
+      - app-network
+    volumes:
+      - letsencrypt:/letsencrypt
+      - /var/run/docker.sock:/var/run/docker.sock
   nextjs:
     build:
       context: ./iusreact  # path to the Next.js app directory
       dockerfile: Dockerfile
     ports:
-      - "8080:8080"
+      - "3000:3000"
     environment:
       - NODE_ENV=production
     depends_on:
@@ -12,6 +28,14 @@ services:
       - db
     networks:
       - app-network
+    labels:
+      - "traefik.enable=true"
+      # localhost:8080 will be proxied to http://iuslex.cloud
+      - "traefik.http.routers.nextjs.rule=Host(`iuslex.cloud`)"
+      #- "traefik.http.routers.nextjs.rule=Host(`localhost`)"
+      - "traefik.http.routers.nextjs.entrypoints=websecure"
+      - "traefik.http.routers.nextjs.tls.certresolver=myresolver"
+      
 
   iusapi:
     build:
@@ -46,6 +70,7 @@ services:
 volumes:
   pgdata:
     driver: local
+  letsencrypt:
 
 networks:
   app-network:
