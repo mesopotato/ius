@@ -8,6 +8,7 @@ const cors = require('cors');
 const app = express();
 app.use(cors());
 app.use(express.json());
+/*
 const allowedIps = ['82.112.241.8', '2a02:4780:28:3b24::1']; // IPv4 and IPv6 localhost addresses
 
 app.use((req, res, next) => {
@@ -18,7 +19,7 @@ app.use((req, res, next) => {
   }
   next();
 });
-
+*/
 const OpenAI = require('openai');
 
 const openai = new OpenAI({
