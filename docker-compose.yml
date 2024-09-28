@@ -15,12 +15,13 @@ services:
     volumes:
       - letsencrypt:/letsencrypt
       - /var/run/docker.sock:/var/run/docker.sock
+
   nextjs:
     build:
       context: ./iusreact  # path to the Next.js app directory
       dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
+    expose:
+      - "3000"
     environment:
       - NODE_ENV=production
     depends_on:
@@ -30,19 +31,18 @@ services:
       - app-network
     labels:
       - "traefik.enable=true"
-      # localhost:8080 will be proxied to http://iuslex.cloud
-      - "traefik.http.routers.nextjs.rule=Host(`iuslex.cloud`)"
-      #- "traefik.http.routers.nextjs.rule=Host(`localhost`)"
+      - "traefik.http.routers.nextjs.rule=Host(`iuslex.cloud`) && PathPrefix(`/`)"
       - "traefik.http.routers.nextjs.entrypoints=websecure"
       - "traefik.http.routers.nextjs.tls.certresolver=myresolver"
+      - "traefik.http.services.nextjs.loadbalancer.server.port=3000"
       
 
   iusapi:
     build:
       context: ./iusapi  # path to the Node.js iusapi directory
       dockerfile: Dockerfile
-    ports:
-      - "3001:3001"
+    expose:
+      - "3001"
     environment:
       - NODE_ENV=production
       - DATABASE_URL=postgres://postgres:secure@db:5432/db
@@ -52,9 +52,10 @@ services:
       - app-network
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.iusapi.rule=Host(`iusapi.cloud`)"
+      - "traefik.http.routers.iusapi.rule=Host(`iuslex.cloud`) && PathPrefix(`/api`)"
       - "traefik.http.routers.iusapi.entrypoints=websecure"
       - "traefik.http.routers.iusapi.tls.certresolver=myresolver"
+      - "traefik.http.services.iusapi.loadbalancer.server.port=3001"
 
   db:
     image: ankane/pgvector:latest  # Use the pgvector image instead of plain postgres

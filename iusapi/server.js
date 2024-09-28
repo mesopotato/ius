@@ -387,7 +387,7 @@ async function findRechtsgrundlage(targetVector, db, topN) {
 }
 
 // API Endpoint
-app.post('/search', async (req, res) => {
+app.post('/api/search', async (req, res) => {
   try {
     const user_input = req.body.query;
     const top_n = 5;
@@ -440,7 +440,7 @@ app.post('/search', async (req, res) => {
 });
 
 // CAPTCHA Verification Endpoint
-app.post('/verify-recaptcha', async (req, res) => {
+app.post('/api/verify-recaptcha', async (req, res) => {
   const { token } = req.body;
 
   if (!token) {

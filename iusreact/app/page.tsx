@@ -166,7 +166,7 @@ export default function Component() {
 
     try {
       //const response = await fetch("http://localhost:3001/search", {
-      const response = await fetch("http://iuslex.cloud:3001/search", {
+      const response = await fetch("http://iuslex.cloud:3001/api/search", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -202,7 +202,7 @@ export default function Component() {
     if (token) {
       try {
 
-        const response = await fetch("http://iuslex.cloud:3001/verify-recaptcha", {
+        const response = await fetch("http://iuslex.cloud:3001/api/verify-recaptcha", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
