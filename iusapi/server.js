@@ -5,10 +5,11 @@ const fetch = require('node-fetch');
 
 const express = require('express');
 const cors = require('cors');
+const axios = require('axios');
 const app = express();
 app.use(cors());
 app.use(express.json());
-import axios from 'axios';
+
 /*
 const allowedIps = ['82.112.241.8', '2a02:4780:28:3b24::1']; // IPv4 and IPv6 localhost addresses
 
