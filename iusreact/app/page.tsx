@@ -202,7 +202,7 @@ export default function Component() {
     if (token) {
       try {
 
-        const response = await fetch("http://iuslex.cloud/api/verify-recaptcha", {
+        const response = await fetch("https://iuslex.cloud/api/verify-recaptcha", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
