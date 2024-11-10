@@ -1,42 +1,67 @@
 # Dockerfile (Next.js)
-# Use official Node.js image as a base
-FROM node:18-alpine AS builder
 
-# Set working directory inside the container
+# Base Stage
+FROM node:18-alpine AS base
+
+# Set working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json files
+# Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install --frozen-lockfile
+# Accept build argument
+ARG ENV=production
 
-# Copy the rest of the app's source code
+# Install dependencies based on ENV
+RUN if [ "$ENV" = "production" ]; then \
+      npm ci --only=production; \
+    else \
+      npm install --frozen-lockfile; \
+    fi
+
+# Copy source code
 COPY . .
 
-# Build the Next.js app for production
-RUN npm run build
+# Copy the appropriate .env file into the image
+COPY .env.${ENV} .env
 
-# Install only production dependencies
-RUN npm ci --production
+# Build Stage (for production)
+FROM base AS build
 
-# Use a lightweight Node.js runtime to serve the app
-FROM node:18-alpine AS runner
+ARG ENV
 
-# Set working directory inside the container
+# Build the app in production
+RUN if [ "$ENV" = "production" ]; then \
+      npm run build; \
+    fi
+
+# Production Stage
+FROM node:18-alpine AS production
+
 WORKDIR /app
 
-# Copy built files and production dependencies from the builder stage
-COPY --from=builder /app/.next /app/.next
-COPY --from=builder /app/node_modules /app/node_modules
-COPY --from=builder /app/package.json /app/package.json
+# Copy necessary files from the build stage
+COPY --from=build /app/package.json /app/package.json
+COPY --from=build /app/.env /app/.env
+COPY --from=build /app/node_modules /app/node_modules
+COPY --from=build /app/.next /app/.next
 
-# Set environment variables
-ENV NODE_ENV=production
-ENV PORT=3000
-
-# Expose the port the app will run on
+# Expose port
 EXPOSE 3000
 
-# Start the Next.js app
+# Start the app
 CMD ["npm", "start"]
+
+# Development Stage
+FROM node:18-alpine AS development
+
+WORKDIR /app
+
+# Copy the entire app from the base stage (includes source code and node_modules)
+COPY --from=base /app /app
+
+# Expose port
+EXPOSE 3000
+
+# Start the app
+CMD ["npm", "run", "dev"]

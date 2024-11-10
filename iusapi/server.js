@@ -7,21 +7,17 @@ const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
 const app = express();
-app.use(cors());
+app.use(cors(
+  {
+    origin: process.env.CORS_ORIGIN || 'http://localhost',
+  }
+));
 app.use(express.json());
 
-/*
-const allowedIps = ['82.112.241.8', '2a02:4780:28:3b24::1']; // IPv4 and IPv6 localhost addresses
-
-app.use((req, res, next) => {
-  const clientIp = req.connection.remoteAddress || req.socket.remoteAddress;
-
-  if (!allowedIps.includes(clientIp)) {
-    return res.status(403).json({ message: 'Forbidden' });
-  }
-  next();
-});
-*/
+// Example of conditional logging
+if (process.env.NODE_ENV === 'development') {
+  console.log('Server is running in development mode.');
+}
 
 // from dotenv import RECAPTCHA_SECRET_KEY
 const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY;
@@ -36,6 +32,9 @@ const { Pool } = require('pg');
 
 // Function to generate embedding
 async function generateEmbeddingPure(text, model = 'text-embedding-3-small') {
+  if (process.env.NODE_ENV === 'development') {
+    console.log('generateEmbeddingPure called with text:', text);
+  }
   if (typeof text !== 'string' || !text.trim()) {
     console.log("Invalid or empty text input detected, returning zero vector.");
     return new Array(1536).fill(0); // Return zero vector
@@ -67,10 +66,21 @@ class DBManager {
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DATABASE,
     });
+    if (process.env.NODE_ENV === 'development') {
+      console.log('DBManager initialized with config:', {
+        host: process.env.POSTGRES_HOST || 'localhost',
+        user: process.env.POSTGRES_USER,
+        password: process.env.POSTGRES_PASSWORD,
+        database: process.env.POSTGRES_DATABASE,
+      });
+    }
   }
 
   // Method to find similar vectors
   async findSimilarVectors(targetVector, columnName, topN) {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('findSimilarVectors called with targetVector: ', 'columnName:', columnName, 'topN:', topN);
+    }
     const vectorStr = '[' + targetVector.join(',') + ']';
     const query = `
       SELECT id, parsed_id, ${columnName}, ${columnName} <=> $1::vector AS distance
@@ -90,6 +100,9 @@ class DBManager {
 
   // Method to find similar article vectors
   async findSimilarArticleVectors(targetVector, topN) {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('findSimilarArticleVectors called with targetVector:','topN:', topN);
+    }
     const vectorStr = '[' + targetVector.join(',') + ']';
     const query = `
       SELECT id, srn, art_id, type_cd, type_id, vector, source_table, vector <=> $1::vector AS distance
@@ -118,6 +131,9 @@ class DBManager {
 
   // Method to get texts from vectors
   async getTextsFromVectors(vectorList) {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('getTextsFromVectors called with vectorList:');
+    }
     const texts = [];
     try {
       for (const [id, parsed_id, distance] of vectorList) {
@@ -153,6 +169,9 @@ class DBManager {
 
   // Method to get articles from vectors
   async getArticlesFromVectors(vectorList) {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('getArticlesFromVectors called with vectorList:');
+    }
     const texts = [];
     try {
       for (const item of vectorList) {
@@ -342,6 +361,9 @@ function combineAndRankVectors(similarSummariesVectorList, similarSachverhalteVe
 
 // Function to find similar documents
 async function findSimilarDocuments(targetVector, db, topN) {
+  if (process.env.NODE_ENV === 'development') {
+    console.log('findSimilarDocuments called with targetVector:', 'topN:', topN);
+  }
   const similarSummariesVectorList = await db.findSimilarVectors(targetVector, 'summary_vector', topN);
   console.log('found similar summaries');
   const similarSachverhalteVectorList = await db.findSimilarVectors(targetVector, 'sachverhalt_vector', topN);
@@ -385,6 +407,9 @@ async function findSimilarDocuments(targetVector, db, topN) {
 
 // Function to find similar articles
 async function findRechtsgrundlage(targetVector, db, topN) {
+  if (process.env.NODE_ENV === 'development') {
+    console.log('findRechtsgrundlage called with targetVector:', 'topN:', topN);
+  }
   const similarVectors = await db.findSimilarArticleVectors(targetVector, topN);
   console.log('found similar articles');
   const similarArticles = await db.getArticlesFromVectors(similarVectors);
@@ -394,6 +419,10 @@ async function findRechtsgrundlage(targetVector, db, topN) {
 
 // API Endpoint
 app.post('/api/search', async (req, res) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log('/api/search called with body:', req.body);
+  }
+  console.log('Request received');
   try {
     const user_input = req.body.query;
     const top_n = 5;
@@ -447,6 +476,9 @@ app.post('/api/search', async (req, res) => {
 
 // CAPTCHA Verification Endpoint
 app.post('/api/verify-recaptcha', async (req, res) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log('/api/verify-recaptcha called with body:', req.body);
+  }
   const { token } = req.body;
 
   if (!token) {
@@ -477,4 +509,8 @@ app.post('/api/verify-recaptcha', async (req, res) => {
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server started on port ${PORT}`);
+  console.log(process.env);
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Server is running in development mode.');
+  }
 });

@@ -35,6 +35,7 @@ import React, { useState, useEffect, useRef } from "react";
 import ReCAPTCHA from "react-google-recaptcha";
 // inporting environment variables
 
+
 export default function Component() {
   interface Document {
     origin: string;
@@ -80,7 +81,9 @@ export default function Component() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    console.log("scrolling to bottom");
+    if (process.env.NODE_ENV === 'development') {
+      console.log("scrolling to bottom");
+    }
   };
 
   // Scroll to the bottom whenever messages change
@@ -165,8 +168,10 @@ export default function Component() {
     setInputValue(""); // Clear the input field
 
     try {
-      //const response = await fetch("http://localhost:3001/search", {
-      const response = await fetch("https://iuslex.cloud/api/search", {
+      if (process.env.NODE_ENV === 'development') {
+        console.log("Sending user input:", user_input);
+      }
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ""}/search`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -177,6 +182,9 @@ export default function Component() {
       const data = await response.json();
 
       if (response.ok) {
+        if (process.env.NODE_ENV === 'development') {
+          console.log("Received data:", data);
+        }
         // Update chat with LLM response
         setMessages((prevMessages) => [
           ...prevMessages,
@@ -200,9 +208,13 @@ export default function Component() {
 
   const handleCaptchaVerify = async (token: string | null) => {
     if (token) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log("Captcha token:", token);
+        console.log("API URL:", process.env.NEXT_PUBLIC_API_URL);
+      }
       try {
 
-        const response = await fetch("https://iuslex.cloud/api/verify-recaptcha", {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ""}/verify-recaptcha`,{
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -234,7 +246,7 @@ export default function Component() {
               Please verify that you are a human
             </h2>
             <ReCAPTCHA
-              sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY  || ""}
+              sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ""}
               onChange={handleCaptchaVerify}
               ref={recaptchaRef}
             />

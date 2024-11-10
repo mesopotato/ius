@@ -10,8 +10,15 @@ COPY package*.json ./
 # Install dependencies
 RUN npm install --frozen-lockfile
 
+# Accept build argument
+ARG ENV
+
 # Copy the backend code
 COPY . .
+
+# Copy the appropriate .env file into the image
+COPY .env.${ENV} .env
+
 
 # Expose the port the backend service will run on
 EXPOSE 3001

@@ -4,7 +4,9 @@ ius
 
 dockerized app 
 
-docker-compose up --build 
+docker-compose --env-file .env.development up --build
+or
+docker-compose --env-file .env.production up --build
 
 docker-compose down 
 
@@ -30,4 +32,4 @@ CREATE EXTENSION IF NOT EXISTS vector;
 import the db : 
 docker exec -it ius_db_1 psql -U postgres -d db -f /mydb_backup_plain.sql
 
-will expose prot 3000 
+will expose port 3000 
