@@ -442,14 +442,16 @@ app.post('/api/search', async (req, res) => {
     let documentsText = similar_documents.map(doc => doc.text).join('\n\n');
 
     // Ensure the total tokens are within the model's limit
-    const MAX_PROMPT_TOKENS = 2000; // Adjust based on the model's limit
+    const MAX_PROMPT_TOKENS = 128000; // Adjust based on the model's limit
     const combinedText = `${articlesText}\n\n${documentsText}`;
     const truncatedText = combinedText.substring(0, MAX_PROMPT_TOKENS);
 
     const prompt = `Ein user hat folgende Frage gestellt: "${user_input}". Die Frage ist wahreitsgetreu zu beantworten. Wie würde sie von einem Rechtswissenschaftler beantwortet werden? \nHier sind einige Artikel und Präzedenzfälle die bei deiner Antwort helfen können: \n\n${truncatedText}\n\n Zitiere möglichst viele Artikel wenn sie relevant sind. Wie sind die Konsequenzen einzuordenen wenn man den Konsensus der Artikel und Präzedenzfälle betrachtet? Informiere den User über die Rechtslage und die möglichen Konsequenzen und gib ihm möglichst viele Informationen auf seine Frage : "${user_input}".`;
 
     // Generate the LLM response
-    
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Prompt for LLM:', prompt);
+    }    
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini', // or 'gpt-4' if you have access
       messages: [
@@ -458,8 +460,7 @@ app.post('/api/search', async (req, res) => {
       ],
     });
   
-    const llm_response = completion.choices[0].message.content;
-    
+    const llm_response = completion.choices[0].message.content;    
 
     res.json({
       user_input: user_input,
@@ -509,8 +510,11 @@ app.post('/api/verify-recaptcha', async (req, res) => {
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server started on port ${PORT}`);
-  console.log(process.env);
+  
   if (process.env.NODE_ENV === 'development') {
     console.log('Server is running in development mode.');
+    console.log(process.env);
+  }else {
+    console.log('Server is running in production mode.');
   }
 });
