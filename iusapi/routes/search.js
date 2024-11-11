@@ -13,9 +13,10 @@ const openai = require('../openaiClient');
 
 router.post('/', async (req, res) => {
   if (process.env.NODE_ENV === 'development') {
+    console.log('Request received');
     console.log('/api/search called with body:', req.body);
   }
-  console.log('Request received');
+  
   try {
     const user_input = req.body.query;
     const top_n = 5;

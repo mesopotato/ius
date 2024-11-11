@@ -43,25 +43,33 @@ async function findSimilarDocuments(targetVector, db, topN) {
     'summary_vector',
     topN
   );
-  console.log('found similar summaries');
+  if (process.env.NODE_ENV === 'development') {
+    console.log('found similar summaries');
+  }
   const similarSachverhalteVectorList = await db.findSimilarVectors(
     targetVector,
     'sachverhalt_vector',
     topN
   );
-  console.log('found similar sachverhalte');
+  if (process.env.NODE_ENV === 'development') {
+    console.log('found similar sachverhalte');
+  }
   const similarEntscheideVectorList = await db.findSimilarVectors(
     targetVector,
     'entscheid_vector',
     topN
   );
-  console.log('found similar entscheide');
+  if (process.env.NODE_ENV === 'development') {
+    console.log('found similar entscheide');
+  }
   const similarGrundlagenVectorList = await db.findSimilarVectors(
     targetVector,
     'grundlagen_vector',
     topN
   );
-  console.log('found similar grundlagen ... combining and ranking vectors');
+  if (process.env.NODE_ENV === 'development') {
+    console.log('found similar grundlagen');
+  }
 
   const topCombinedVectors = combineAndRankVectors(
     similarSummariesVectorList,
@@ -70,7 +78,9 @@ async function findSimilarDocuments(targetVector, db, topN) {
     similarGrundlagenVectorList,
     topN
   );
-  console.log('combined and ranked vectors');
+  if (process.env.NODE_ENV === 'development') {
+    console.log('combined and ranked vectors');
+  }
 
   const results = [];
   for (const item of topCombinedVectors) {
@@ -106,10 +116,14 @@ async function findRechtsgrundlage(targetVector, db, topN) {
     console.log('findRechtsgrundlage called with targetVector:', 'topN:', topN);
   }
   const similarVectors = await db.findSimilarArticleVectors(targetVector, topN);
-  console.log('found similar articles');
+  if (process.env.NODE_ENV === 'development') {
+    console.log('found similar articles');
+  }
   const similarArticles = await db.getArticlesFromVectors(similarVectors);
-  console.log('got articles from vectors');
-  return similarArticles;
+  if (process.env.NODE_ENV === 'development') {
+    console.log('got articles from vectors');
+  }
+    return similarArticles;
 }
 
 module.exports = {

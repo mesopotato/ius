@@ -1,9 +1,23 @@
 services:
+  watchtower:
+    image: containrrr/watchtower
+    command: 
+      - "--interval"
+      - "30"
+      - "--label-enable"
+      - "--rolling-restart"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      WATCHTOWER_CLEANUP: "true"
+    networks:
+      - app-network
   reverse-proxy:
     image: traefik:v3.1
     command:
       - "--api.insecure=${TRAEFIK_API_INSECURE}"
       - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.websecure.address=:443"
       - "--entrypoints.web.address=:80"
       - ${TRAEFIK_TLS_CHALLENGE_COMMAND}
@@ -19,6 +33,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
 
   nextjs:
+    image: mesopotato/ius-nextjs:prod
     build:
       context: ./iusreact
       dockerfile: Dockerfile
@@ -27,6 +42,16 @@ services:
       target: ${BUILD_TARGET}
     environment:
       ENV: ${ENV}
+    deploy:
+      mode: replicated
+      replicas: ${REPLICAS}
+      resources:
+        limits:
+          cpus: ${CPU_LIMIT}
+          memory: ${MEMORY_LIMIT}
+        reservations:
+          cpus: ${CPU_RESERVATION}
+          memory: ${MEMORY_RESERVATION}  
     expose:
       - "3000"
     env_file:
@@ -42,13 +67,25 @@ services:
       - "traefik.http.routers.nextjs.entrypoints=${TRAEFIK_ENTRYPOINT}"
       - ${TRAEFIK_TLS_LABEL_NEXTJS}
       - "traefik.http.services.nextjs.loadbalancer.server.port=3000"
+      - "com.centurylinklabs.watchtower.enable=true"
 
   iusapi:
+    image: mesopotato/ius-iusapi:prod
     build:
       context: ./iusapi
       dockerfile: Dockerfile
       args:
         ENV: ${ENV}
+    deploy:
+      mode: replicated
+      replicas: ${REPLICAS}
+      resources:
+        limits:
+          cpus: ${CPU_LIMIT}
+          memory: ${MEMORY_LIMIT}
+        reservations:
+          cpus: ${CPU_RESERVATION}
+          memory: ${MEMORY_RESERVATION}    
     expose:
       - "3001"
     env_file:
@@ -63,6 +100,7 @@ services:
       - "traefik.http.routers.iusapi.entrypoints=${TRAEFIK_ENTRYPOINT}"
       - ${TRAEFIK_TLS_LABEL_IUSAPI}
       - "traefik.http.services.iusapi.loadbalancer.server.port=3001"
+      - "com.centurylinklabs.watchtower.enable=true"
 
   db:
     image: ankane/pgvector:latest

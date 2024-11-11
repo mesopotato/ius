@@ -14,7 +14,9 @@ async function generateEmbeddingPure(text, model = 'text-embedding-3-small') {
   }
   text = text.replace(/\n/g, ' ');
   try {
-    console.log('Generating embedding for text:', text);
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Generating embedding for text:', text);
+    }
     const response = await openai.embeddings.create({
       input: text,
       model: model,

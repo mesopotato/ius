@@ -24,8 +24,9 @@ router.post('/', async (req, res) => {
     const { data } = await axios.post(verificationURL);
 
     if (data.success) {
-      // CAPTCHA verified successfully
-      console.log('reCAPTCHA verification successful');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('reCAPTCHA verification successful'); 
+      }
       res.status(200).json({ success: true });
     } else {
       // Verification failed
